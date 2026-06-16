@@ -9,7 +9,6 @@ import {
   BorderStyle,
 } from "docx";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 import type { AssignmentHeader, GeneratedAssignment } from "./assignment-types";
 
