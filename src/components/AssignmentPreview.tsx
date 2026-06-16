@@ -65,8 +65,8 @@ export function AssignmentPreview({
   };
 
   const handlePdf = async () => {
-    if (!printRef.current || !assignment) return;
-    toast.promise(exportPdf(printRef.current, header, assignment), {
+    if (!assignment) return;
+    toast.promise(exportPdf(printRef.current, header, assignment, showAnswerKey), {
       loading: "Building PDF…",
       success: "PDF downloaded",
       error: "Could not create PDF",
