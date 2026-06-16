@@ -164,8 +164,10 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           </Field>
           <Field label="Subject">
             <Select
-              value={header.subject}
-              onValueChange={(v) => setHeader({ ...header, subject: v })}
+              value={(SUBJECTS as readonly string[]).includes(header.subject) ? header.subject : "Other"}
+              onValueChange={(v) =>
+                setHeader({ ...header, subject: v === "Other" ? "" : v })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select" />
@@ -180,6 +182,16 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
             </Select>
           </Field>
         </div>
+
+        {!(SUBJECTS as readonly string[]).includes(header.subject) && (
+          <Field label="Custom Subject Name">
+            <Input
+              placeholder="e.g. Environmental Studies"
+              value={header.subject}
+              onChange={(e) => setHeader({ ...header, subject: e.target.value })}
+            />
+          </Field>
+        )}
 
         <Field label="Topic / Chapter Name">
           <Input
