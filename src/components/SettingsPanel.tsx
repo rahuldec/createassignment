@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Upload, X, Sparkles, Loader2, GraduationCap } from "lucide-react";
+import { Upload, X, Sparkles, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +17,13 @@ import {
   SUBJECTS,
   QUESTION_TYPES,
   DIFFICULTY_LEVELS,
-  BLOOMS_LEVELS,
   type AssignmentHeader,
   type QuestionType,
 } from "@/lib/assignment-types";
 
 interface GenState {
   difficulty: string;
-  bloomsLevel: string;
-  counts: Record<string, number>;
+  config: Record<string, { count: number; marks: number }>;
 }
 
 interface Props {
@@ -78,10 +76,19 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
     reader.readAsDataURL(file);
   };
 
-  const setCount = (type: QuestionType, value: number) =>
-    setGen({ ...gen, counts: { ...gen.counts, [type]: Math.max(0, value) } });
+  const setField = (type: QuestionType, field: "count" | "marks", value: number) => {
+    const prev = gen.config[type] ?? { count: 0, marks: 1 };
+    setGen({
+      ...gen,
+      config: { ...gen.config, [type]: { ...prev, [field]: Math.max(field === "marks" ? 1 : 0, value) } },
+    });
+  };
 
-  const totalQuestions = Object.values(gen.counts).reduce((a, b) => a + b, 0);
+  const totalQuestions = Object.values(gen.config).reduce((a, v) => a + (v.count || 0), 0);
+  const totalMarks = Object.values(gen.config).reduce(
+    (a, v) => a + (v.count || 0) * (v.marks || 0),
+    0,
+  );
 
   return (
     <div className="space-y-5">
@@ -157,8 +164,10 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           </Field>
           <Field label="Subject">
             <Select
-              value={header.subject}
-              onValueChange={(v) => setHeader({ ...header, subject: v })}
+              value={(SUBJECTS as readonly string[]).includes(header.subject) ? header.subject : "Other"}
+              onValueChange={(v) =>
+                setHeader({ ...header, subject: v === "Other" ? "" : v })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select" />
@@ -173,6 +182,16 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
             </Select>
           </Field>
         </div>
+
+        {!(SUBJECTS as readonly string[]).includes(header.subject) && (
+          <Field label="Custom Subject Name">
+            <Input
+              placeholder="e.g. Environmental Studies"
+              value={header.subject}
+              onChange={(e) => setHeader({ ...header, subject: e.target.value })}
+            />
+          </Field>
+        )}
 
         <Field label="Topic / Chapter Name">
           <Input
@@ -212,65 +231,65 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
 
       <SectionCard title="Question Configuration" step={2}>
         <div>
-          <Label className="mb-2 block text-xs font-medium text-muted-foreground">
-            Question Types &amp; Counts
-          </Label>
-          <div className="grid grid-cols-2 gap-3">
-            {QUESTION_TYPES.map((type) => (
-              <div
-                key={type}
-                className="flex items-center justify-between gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2"
-              >
-                <span className="text-xs font-medium leading-tight">{type}</span>
-                <Input
-                  type="number"
-                  min={0}
-                  value={gen.counts[type] ?? 0}
-                  onChange={(e) => setCount(type, parseInt(e.target.value) || 0)}
-                  className="h-8 w-14 text-center"
-                />
-              </div>
-            ))}
+          <div className="mb-2 grid grid-cols-[1fr_auto_auto] items-center gap-2">
+            <Label className="text-xs font-medium text-muted-foreground">Question Type</Label>
+            <Label className="w-14 text-center text-xs font-medium text-muted-foreground">Qty</Label>
+            <Label className="w-14 text-center text-xs font-medium text-muted-foreground">
+              Marks
+            </Label>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Total questions: <span className="font-semibold text-foreground">{totalQuestions}</span>
+          <div className="space-y-2">
+            {QUESTION_TYPES.map((type) => {
+              const cfg = gen.config[type] ?? { count: 0, marks: 1 };
+              return (
+                <div
+                  key={type}
+                  className="grid grid-cols-[1fr_auto_auto] items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2"
+                >
+                  <span className="text-xs font-medium leading-tight">{type}</span>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={cfg.count}
+                    onChange={(e) => setField(type, "count", parseInt(e.target.value) || 0)}
+                    className="h-8 w-14 text-center"
+                  />
+                  <Input
+                    type="number"
+                    min={1}
+                    value={cfg.marks}
+                    onChange={(e) => setField(type, "marks", parseInt(e.target.value) || 1)}
+                    className="h-8 w-14 text-center"
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-2 flex justify-between text-xs text-muted-foreground">
+            <span>
+              Total questions:{" "}
+              <span className="font-semibold text-foreground">{totalQuestions}</span>
+            </span>
+            <span>
+              Total marks: <span className="font-semibold text-foreground">{totalMarks}</span>
+            </span>
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Difficulty Level">
-            <Select value={gen.difficulty} onValueChange={(v) => setGen({ ...gen, difficulty: v })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DIFFICULTY_LEVELS.map((d) => (
-                  <SelectItem key={d} value={d}>
-                    {d}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Bloom's Level (optional)">
-            <Select
-              value={gen.bloomsLevel || "none"}
-              onValueChange={(v) => setGen({ ...gen, bloomsLevel: v === "none" ? "" : v })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {BLOOMS_LEVELS.map((b) => (
-                  <SelectItem key={b} value={b}>
-                    {b}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
+        <Field label="Difficulty Level">
+          <Select value={gen.difficulty} onValueChange={(v) => setGen({ ...gen, difficulty: v })}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DIFFICULTY_LEVELS.map((d) => (
+                <SelectItem key={d} value={d}>
+                  {d}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
       </SectionCard>
 
       <Button
@@ -291,10 +310,6 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
         )}
       </Button>
 
-      <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-        <GraduationCap className="size-3.5" /> AI builds the prompt for you — no prompt writing
-        needed.
-      </p>
     </div>
   );
 }

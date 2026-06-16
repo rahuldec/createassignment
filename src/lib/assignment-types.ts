@@ -4,6 +4,10 @@ export const SUBJECTS = [
   "Science",
   "Social Science",
   "Hindi",
+  "Punjabi",
+  "German",
+  "French",
+  "Sanskrit",
   "Computer Science",
   "Other",
 ] as const;
@@ -36,6 +40,7 @@ export interface QuestionGroup {
   id: string;
   type: QuestionType;
   count: number;
+  marks: number; // marks per question
 }
 
 export interface AssignmentHeader {
@@ -56,7 +61,6 @@ export interface GenerationConfig {
   topic: string;
   groups: QuestionGroup[];
   difficulty: string;
-  bloomsLevel: string;
 }
 
 export interface GeneratedQuestion {

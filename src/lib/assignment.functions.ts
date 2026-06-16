@@ -13,7 +13,7 @@ const inputSchema = z.object({
   subject: z.string().min(1),
   topic: z.string().min(1),
   difficulty: z.string().min(1),
-  bloomsLevel: z.string().optional().default(""),
+
   groups: z.array(questionGroupSchema).min(1),
   prompt: z.string().min(1),
 });

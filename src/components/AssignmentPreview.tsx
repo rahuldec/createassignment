@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Printer,
   Copy,
@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { exportPdf, exportDocx } from "@/lib/export-utils";
 import type { AssignmentHeader, GeneratedAssignment } from "@/lib/assignment-types";
 
@@ -38,6 +39,24 @@ export function AssignmentPreview({
   onRegenerate,
 }: Props) {
   const printRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setProgress(0);
+      return;
+    }
+    setProgress(8);
+    const timer = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 92) return p;
+        // ease out: smaller increments as we approach the cap
+        const step = Math.max(1, Math.round((95 - p) / 12));
+        return Math.min(92, p + step);
+      });
+    }, 350);
+    return () => clearInterval(timer);
+  }, [loading]);
 
   const handleCopy = async () => {
     if (!printRef.current) return;
@@ -72,11 +91,17 @@ export function AssignmentPreview({
     return (
       <div className="flex h-full min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 p-10 text-center">
         {loading ? (
-          <>
-            <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-muted border-t-primary" />
-            <p className="font-medium">Your assignment is being created…</p>
-            <p className="mt-1 text-sm text-muted-foreground">This usually takes a few seconds.</p>
-          </>
+          <div className="w-full max-w-sm">
+            <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-muted border-t-primary" />
+            <p className="font-medium">Generating your assignment…</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Our AI is writing your questions. Hang tight!
+            </p>
+            <div className="mt-5">
+              <Progress value={progress} />
+              <p className="mt-2 text-sm font-semibold text-primary">{progress}%</p>
+            </div>
+          </div>
         ) : (
           <>
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-soft">
