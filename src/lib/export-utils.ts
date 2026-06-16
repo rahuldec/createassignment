@@ -27,62 +27,163 @@ function safeName(header: AssignmentHeader, assignment: GeneratedAssignment) {
 }
 
 export async function exportPdf(
-  element: HTMLElement,
+  _element: HTMLElement | null,
   header: AssignmentHeader,
   assignment: GeneratedAssignment,
+  includeAnswerKey = false,
 ) {
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    backgroundColor: "#ffffff",
-    useCORS: true,
-  });
-  const imgData = canvas.toDataURL("image/jpeg", 0.95);
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 24;
-  const imgWidth = pageWidth - margin * 2;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  const margin = 40;
+  const contentWidth = pageWidth - margin * 2;
+  let y = margin;
 
-  let remaining = imgHeight;
-  let position = margin;
-  // Single-image multipage slicing
-  if (imgHeight <= pageHeight - margin * 2) {
-    pdf.addImage(imgData, "JPEG", margin, margin, imgWidth, imgHeight);
-  } else {
-    let pageNum = 0;
-    while (remaining > 0) {
-      if (pageNum > 0) pdf.addPage();
-      const sourceY = (pageNum * (pageHeight - margin * 2) * canvas.width) / imgWidth;
-      const sliceHeightPx = ((pageHeight - margin * 2) * canvas.width) / imgWidth;
-      const sliceCanvas = document.createElement("canvas");
-      sliceCanvas.width = canvas.width;
-      sliceCanvas.height = Math.min(sliceHeightPx, canvas.height - sourceY);
-      const ctx = sliceCanvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-        ctx.drawImage(
-          canvas,
-          0,
-          sourceY,
-          canvas.width,
-          sliceCanvas.height,
-          0,
-          0,
-          canvas.width,
-          sliceCanvas.height,
-        );
-      }
-      const sliceData = sliceCanvas.toDataURL("image/jpeg", 0.95);
-      const sliceImgHeight = (sliceCanvas.height * imgWidth) / canvas.width;
-      pdf.addImage(sliceData, "JPEG", margin, margin, imgWidth, sliceImgHeight);
-      remaining -= pageHeight - margin * 2;
-      pageNum++;
-      position = margin;
+  const ensureSpace = (needed: number) => {
+    if (y + needed > pageHeight - margin) {
+      pdf.addPage();
+      y = margin;
+    }
+  };
+
+  const writeText = (
+    text: string,
+    opts: {
+      size?: number;
+      bold?: boolean;
+      align?: "left" | "center";
+      indent?: number;
+      gap?: number;
+      color?: [number, number, number];
+    } = {},
+  ) => {
+    const { size = 11, bold = false, align = "left", indent = 0, gap = 4, color } = opts;
+    pdf.setFont("helvetica", bold ? "bold" : "normal");
+    pdf.setFontSize(size);
+    pdf.setTextColor(...(color ?? [20, 20, 20]));
+    const x = align === "center" ? pageWidth / 2 : margin + indent;
+    const lines = pdf.splitTextToSize(text, contentWidth - indent);
+    const lineHeight = size * 1.35;
+    for (const line of lines) {
+      ensureSpace(lineHeight);
+      pdf.text(line, x, y, { align });
+      y += lineHeight;
+    }
+    y += gap;
+  };
+
+  const divider = (gap = 8) => {
+    ensureSpace(gap);
+    pdf.setDrawColor(120, 120, 120);
+    pdf.line(margin, y, pageWidth - margin, y);
+    y += gap;
+  };
+
+  // Logo
+  if (header.schoolLogo) {
+    try {
+      const fmt = header.schoolLogo.includes("png") ? "PNG" : "JPEG";
+      const size = 50;
+      ensureSpace(size + 6);
+      pdf.addImage(header.schoolLogo, fmt, pageWidth / 2 - size / 2, y, size, size);
+      y += size + 8;
+    } catch {
+      /* ignore bad image */
     }
   }
-  void position;
+
+  // Header
+  writeText(header.schoolName || "School Name", { size: 18, bold: true, align: "center", gap: 2 });
+  writeText(header.examName || assignment.title, {
+    size: 13,
+    bold: true,
+    align: "center",
+    gap: 4,
+  });
+
+  const metaLine = [
+    header.className && `Class: ${header.className}`,
+    `Subject: ${header.subject || assignment.subject}`,
+    (header.topic || assignment.topic) && `Topic: ${header.topic || assignment.topic}`,
+  ]
+    .filter(Boolean)
+    .join("    |    ");
+  writeText(metaLine, { size: 10, align: "center", gap: 2 });
+
+  const metaLine2 = [
+    header.maxMarks && `Maximum Marks: ${header.maxMarks}`,
+    header.duration && `Duration: ${header.duration}`,
+  ]
+    .filter(Boolean)
+    .join("    |    ");
+  if (metaLine2) writeText(metaLine2, { size: 10, bold: true, align: "center", gap: 4 });
+  divider(10);
+
+  // Instructions
+  const instructions =
+    header.instructions.trim().length > 0
+      ? header.instructions.split("\n").filter((l) => l.trim())
+      : assignment.instructions;
+  if (instructions.length) {
+    writeText("General Instructions:", { size: 11, bold: true, gap: 2 });
+    instructions.forEach((ins) =>
+      writeText(`•  ${ins.replace(/^[-•\d.]+\s*/, "")}`, { size: 10, indent: 10, gap: 2 }),
+    );
+    y += 4;
+  }
+
+  // Sections
+  assignment.sections.forEach((section) => {
+    y += 6;
+    writeText(section.title.toUpperCase(), { size: 12, bold: true, gap: 2 });
+    if (section.instruction) writeText(section.instruction, { size: 9.5, gap: 4 });
+    section.questions.forEach((q) => {
+      const qText = `${q.number}. ${q.question}`;
+      const marksText = q.marks ? `[${q.marks}]` : "";
+      // question line, leaving room for marks on the right
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(11);
+      pdf.setTextColor(20, 20, 20);
+      const lines = pdf.splitTextToSize(qText, contentWidth - 40);
+      const lineHeight = 11 * 1.35;
+      lines.forEach((line: string, idx: number) => {
+        ensureSpace(lineHeight);
+        pdf.text(line, margin, y);
+        if (idx === 0 && marksText) {
+          pdf.setFont("helvetica", "bold");
+          pdf.text(marksText, pageWidth - margin, y, { align: "right" });
+          pdf.setFont("helvetica", "normal");
+        }
+        y += lineHeight;
+      });
+      y += 2;
+      if (q.options?.length) {
+        q.options.forEach((opt, i) =>
+          writeText(`(${String.fromCharCode(97 + i)}) ${opt}`, {
+            size: 10,
+            indent: 18,
+            gap: 1,
+          }),
+        );
+      }
+      y += 4;
+    });
+  });
+
+  // Answer Key
+  if (includeAnswerKey) {
+    pdf.addPage();
+    y = margin;
+    writeText("ANSWER KEY", { size: 14, bold: true, align: "center", gap: 6 });
+    assignment.sections.forEach((section) => {
+      writeText(section.title, { size: 11, bold: true, gap: 2 });
+      section.questions.forEach((q) =>
+        writeText(`${q.number}. ${q.answer}`, { size: 10, indent: 10, gap: 2 }),
+      );
+      y += 4;
+    });
+  }
+
   pdf.save(`${safeName(header, assignment)}.pdf`);
 }
 
