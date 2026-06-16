@@ -310,10 +310,6 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
         )}
       </Button>
 
-      <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-        <GraduationCap className="size-3.5" /> AI builds the prompt for you — no prompt writing
-        needed.
-      </p>
     </div>
   );
 }
