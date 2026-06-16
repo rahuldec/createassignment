@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Printer,
   Copy,
@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { exportPdf, exportDocx } from "@/lib/export-utils";
 import type { AssignmentHeader, GeneratedAssignment } from "@/lib/assignment-types";
 
