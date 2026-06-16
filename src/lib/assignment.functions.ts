@@ -65,8 +65,10 @@ export const generateAssignment = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("AI is not configured. Missing API key.");
 
     const systemPrompt =
-      "You are an expert CBSE/ICSE school examiner who writes clear, accurate, " +
-      "age-appropriate question papers. Always return valid structured JSON only. " +
+      "You are an expert CBSE school examiner who writes clear, accurate, " +
+      "age-appropriate question papers strictly based on official NCERT/CBSE textbooks. " +
+      "Always return valid structured JSON only. " +
+      "Generate all questions and content directly from the CBSE curriculum and prescribed NCERT books for the given class, subject and chapter. " +
       "Group questions into sections (Section A, Section B, ...) by question type. " +
       "For MCQ provide exactly 4 options as plain strings WITHOUT a), b) prefixes. " +
       "Assign reasonable marks to each question. Provide a concise correct answer for every question.";
