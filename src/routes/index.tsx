@@ -43,8 +43,10 @@ const initialHeader: AssignmentHeader = {
 
 const initialGen = {
   difficulty: "Medium",
-  bloomsLevel: "",
-  counts: { MCQ: 5, "Short Answer": 3 } as Record<string, number>,
+  config: {
+    MCQ: { count: 5, marks: 1 },
+    "Short Answer": { count: 3, marks: 2 },
+  } as Record<string, { count: number; marks: number }>,
 };
 
 function Index() {
@@ -56,9 +58,14 @@ function Index() {
   const [showAnswerKey, setShowAnswerKey] = useState(false);
 
   const runGeneration = async () => {
-    const groups: QuestionGroup[] = Object.entries(gen.counts)
-      .filter(([, count]) => count > 0)
-      .map(([type, count], i) => ({ id: String(i), type: type as QuestionGroup["type"], count }));
+    const groups: QuestionGroup[] = Object.entries(gen.config)
+      .filter(([, v]) => v.count > 0)
+      .map(([type, v], i) => ({
+        id: String(i),
+        type: type as QuestionGroup["type"],
+        count: v.count,
+        marks: v.marks,
+      }));
 
     if (!header.topic.trim()) {
       toast.error("Please enter a topic / chapter name.");
@@ -77,7 +84,6 @@ function Index() {
         subject: header.subject,
         topic: header.topic,
         difficulty: gen.difficulty,
-        bloomsLevel: gen.bloomsLevel,
         groups,
       });
       const result = await generateAssignment({
@@ -86,7 +92,6 @@ function Index() {
           subject: header.subject,
           topic: header.topic,
           difficulty: gen.difficulty,
-          bloomsLevel: gen.bloomsLevel,
           groups: groups.map((g) => ({ type: g.type, count: g.count })),
           prompt,
         },
