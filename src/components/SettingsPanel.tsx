@@ -76,10 +76,19 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
     reader.readAsDataURL(file);
   };
 
-  const setCount = (type: QuestionType, value: number) =>
-    setGen({ ...gen, counts: { ...gen.counts, [type]: Math.max(0, value) } });
+  const setField = (type: QuestionType, field: "count" | "marks", value: number) => {
+    const prev = gen.config[type] ?? { count: 0, marks: 1 };
+    setGen({
+      ...gen,
+      config: { ...gen.config, [type]: { ...prev, [field]: Math.max(field === "marks" ? 1 : 0, value) } },
+    });
+  };
 
-  const totalQuestions = Object.values(gen.counts).reduce((a, b) => a + b, 0);
+  const totalQuestions = Object.values(gen.config).reduce((a, v) => a + (v.count || 0), 0);
+  const totalMarks = Object.values(gen.config).reduce(
+    (a, v) => a + (v.count || 0) * (v.marks || 0),
+    0,
+  );
 
   return (
     <div className="space-y-5">
