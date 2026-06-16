@@ -4,6 +4,10 @@ export const SUBJECTS = [
   "Science",
   "Social Science",
   "Hindi",
+  "Punjabi",
+  "German",
+  "French",
+  "Sanskrit",
   "Computer Science",
   "Other",
 ] as const;
