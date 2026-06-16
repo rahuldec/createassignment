@@ -26,12 +26,74 @@ function safeName(header: AssignmentHeader, assignment: GeneratedAssignment) {
   return base.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "") || "Assignment";
 }
 
+// Detects characters outside the Latin range (e.g. Devanagari/Hindi) that
+// jsPDF's built-in Helvetica font cannot render.
+function hasNonLatinText(assignment: GeneratedAssignment, header: AssignmentHeader) {
+  const nonLatin = /[^\u0000-\u024F]/; // beyond Latin + Latin Extended-A
+  const parts: string[] = [header.subject, header.topic, header.examName, assignment.title];
+  for (const s of assignment.sections) {
+    parts.push(s.title, s.instruction ?? "");
+    for (const q of s.questions) {
+      parts.push(q.question, q.answer ?? "", ...(q.options ?? []));
+    }
+  }
+  return parts.some((p) => p && nonLatin.test(p));
+}
+
+// Renders the on-screen paper DOM to a multi-page PDF using the browser's own
+// fonts. Required for scripts (Hindi, etc.) that jsPDF cannot draw natively.
+async function exportPdfFromElement(
+  element: HTMLElement,
+  header: AssignmentHeader,
+  assignment: GeneratedAssignment,
+) {
+  const { default: html2canvas } = await import("html2canvas");
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    backgroundColor: "#ffffff",
+    useCORS: true,
+  });
+
+  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 24;
+  const imgWidth = pageWidth - margin * 2;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  const usableHeight = pageHeight - margin * 2;
+
+  let remaining = imgHeight;
+  let position = margin;
+  const imgData = canvas.toDataURL("image/jpeg", 0.92);
+
+  // Single tall image sliced across pages.
+  if (imgHeight <= usableHeight) {
+    pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
+  } else {
+    let offset = 0;
+    while (remaining > 0) {
+      pdf.addImage(imgData, "JPEG", margin, margin - offset, imgWidth, imgHeight);
+      remaining -= usableHeight;
+      offset += usableHeight;
+      if (remaining > 0) pdf.addPage();
+    }
+  }
+
+  pdf.save(`${safeName(header, assignment)}.pdf`);
+}
+
 export async function exportPdf(
-  _element: HTMLElement | null,
+  element: HTMLElement | null,
   header: AssignmentHeader,
   assignment: GeneratedAssignment,
   includeAnswerKey = false,
 ) {
+  // Hindi (and other non-Latin) text can't be drawn with jsPDF's built-in
+  // fonts, so render the live paper DOM to an image instead.
+  if (element && hasNonLatinText(assignment, header)) {
+    return exportPdfFromElement(element, header, assignment);
+  }
+
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
