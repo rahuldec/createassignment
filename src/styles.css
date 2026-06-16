@@ -59,42 +59,52 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-primary-glow: var(--primary-glow);
+  --color-success: var(--success);
+  --font-sans: var(--font-sans);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.875rem;
+  --background: oklch(0.985 0.006 247);
+  --foreground: oklch(0.27 0.03 257);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.27 0.03 257);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --popover-foreground: oklch(0.27 0.03 257);
+  --primary: oklch(0.55 0.16 258);
+  --primary-foreground: oklch(0.99 0.005 247);
+  --primary-glow: oklch(0.68 0.14 258);
+  --secondary: oklch(0.95 0.02 200);
+  --secondary-foreground: oklch(0.4 0.08 220);
+  --muted: oklch(0.96 0.008 247);
+  --muted-foreground: oklch(0.55 0.03 257);
+  --accent: oklch(0.92 0.06 185);
+  --accent-foreground: oklch(0.35 0.08 200);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.99 0.005 247);
+  --success: oklch(0.62 0.15 155);
+  --border: oklch(0.91 0.012 255);
+  --input: oklch(0.91 0.012 255);
+  --ring: oklch(0.55 0.16 258);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar: oklch(0.99 0.005 247);
+  --sidebar-foreground: oklch(0.27 0.03 257);
+  --sidebar-primary: oklch(0.55 0.16 258);
+  --sidebar-primary-foreground: oklch(0.99 0.005 247);
+  --sidebar-accent: oklch(0.95 0.02 200);
+  --sidebar-accent-foreground: oklch(0.4 0.08 220);
+  --sidebar-border: oklch(0.91 0.012 255);
+  --sidebar-ring: oklch(0.55 0.16 258);
+  --gradient-primary: linear-gradient(135deg, oklch(0.55 0.16 258), oklch(0.68 0.14 258));
+  --gradient-soft: linear-gradient(160deg, oklch(0.97 0.02 220), oklch(0.985 0.006 247));
+  --shadow-card: 0 1px 3px oklch(0.27 0.03 257 / 0.06), 0 8px 24px -12px oklch(0.55 0.16 258 / 0.18);
+  --shadow-elegant: 0 20px 50px -20px oklch(0.55 0.16 258 / 0.3);
+  --font-sans: "Inter var", "Plus Jakarta Sans", system-ui, sans-serif;
 }
 
 .dark {
@@ -140,5 +150,61 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: "Plus Jakarta Sans", var(--font-sans);
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-primary {
+    background-image: var(--gradient-primary);
+  }
+  .bg-gradient-soft {
+    background-image: var(--gradient-soft);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+  .text-gradient {
+    background-image: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Printable paper layout */
+.paper-sheet {
+  font-family: "Times New Roman", Georgia, serif;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-area,
+  #print-area * {
+    visibility: visible;
+  }
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0;
+    padding: 24px 32px;
+  }
+  .no-print {
+    display: none !important;
   }
 }
