@@ -39,6 +39,24 @@ export function AssignmentPreview({
   onRegenerate,
 }: Props) {
   const printRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setProgress(0);
+      return;
+    }
+    setProgress(8);
+    const timer = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 92) return p;
+        // ease out: smaller increments as we approach the cap
+        const step = Math.max(1, Math.round((95 - p) / 12));
+        return Math.min(92, p + step);
+      });
+    }, 350);
+    return () => clearInterval(timer);
+  }, [loading]);
 
   const handleCopy = async () => {
     if (!printRef.current) return;
