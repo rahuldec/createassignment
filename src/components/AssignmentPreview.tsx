@@ -91,11 +91,17 @@ export function AssignmentPreview({
     return (
       <div className="flex h-full min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 p-10 text-center">
         {loading ? (
-          <>
-            <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-muted border-t-primary" />
-            <p className="font-medium">Your assignment is being created…</p>
-            <p className="mt-1 text-sm text-muted-foreground">This usually takes a few seconds.</p>
-          </>
+          <div className="w-full max-w-sm">
+            <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-muted border-t-primary" />
+            <p className="font-medium">Generating your assignment…</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Our AI is writing your questions. Hang tight!
+            </p>
+            <div className="mt-5">
+              <Progress value={progress} />
+              <p className="mt-2 text-sm font-semibold text-primary">{progress}%</p>
+            </div>
+          </div>
         ) : (
           <>
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-soft">
