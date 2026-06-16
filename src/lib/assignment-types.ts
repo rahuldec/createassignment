@@ -40,6 +40,7 @@ export interface QuestionGroup {
   id: string;
   type: QuestionType;
   count: number;
+  marks: number; // marks per question
 }
 
 export interface AssignmentHeader {
@@ -60,7 +61,6 @@ export interface GenerationConfig {
   topic: string;
   groups: QuestionGroup[];
   difficulty: string;
-  bloomsLevel: string;
 }
 
 export interface GeneratedQuestion {
