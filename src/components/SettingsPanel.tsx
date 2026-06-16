@@ -17,15 +17,13 @@ import {
   SUBJECTS,
   QUESTION_TYPES,
   DIFFICULTY_LEVELS,
-  BLOOMS_LEVELS,
   type AssignmentHeader,
   type QuestionType,
 } from "@/lib/assignment-types";
 
 interface GenState {
   difficulty: string;
-  bloomsLevel: string;
-  counts: Record<string, number>;
+  config: Record<string, { count: number; marks: number }>;
 }
 
 interface Props {
