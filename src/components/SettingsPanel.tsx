@@ -294,6 +294,49 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           </p>
         </div>
 
+        <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">CBSE / NCERT</p>
+              <p className="text-xs text-muted-foreground">Questions from CBSE curriculum</p>
+            </div>
+            <Switch
+              checked={cbseActive}
+              onCheckedChange={(v) => setCurriculum(v ? "cbse" : "general")}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">French DELF / DALF</p>
+              <p className="text-xs text-muted-foreground">Subject locks to French</p>
+            </div>
+            <Switch
+              checked={delfActive}
+              onCheckedChange={(v) => setCurriculum(v ? "delf" : "cbse")}
+            />
+          </div>
+          {delfActive && (
+            <Field label="DELF / DALF Level">
+              <Select
+                value={gen.delfLevel}
+                onValueChange={(v) => setGen({ ...gen, delfLevel: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DELF_LEVELS.map((l) => (
+                    <SelectItem key={l} value={l}>
+                      {l}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        </div>
+
+
         <Field label="Difficulty Level">
           <Select value={gen.difficulty} onValueChange={(v) => setGen({ ...gen, difficulty: v })}>
             <SelectTrigger>
