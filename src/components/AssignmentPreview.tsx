@@ -220,6 +220,11 @@ export function AssignmentPreview({
                       </span>
                     ) : null}
                   </div>
+                  {q.passage && (
+                    <p className="ml-5 mt-1.5 border-l-2 border-zinc-300 pl-3 text-sm italic text-zinc-700">
+                      {q.passage}
+                    </p>
+                  )}
                   {q.options && q.options.length > 0 && (
                     <div className="ml-5 mt-1.5 grid grid-cols-1 gap-1 text-sm sm:grid-cols-2">
                       {q.options.map((opt, oi) => (
@@ -228,6 +233,50 @@ export function AssignmentPreview({
                         </span>
                       ))}
                     </div>
+                  )}
+                  {q.matchPairs && q.matchPairs.length > 0 && (
+                    <table className="ml-5 mt-2 w-[80%] border-collapse text-sm">
+                      <thead>
+                        <tr>
+                          <th className="border border-zinc-400 bg-zinc-100 px-2 py-1 text-left">
+                            Column A
+                          </th>
+                          <th className="border border-zinc-400 bg-zinc-100 px-2 py-1 text-left">
+                            Column B
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {q.matchPairs.map((pair, pi) => (
+                          <tr key={pi}>
+                            <td className="border border-zinc-400 px-2 py-1">{pair.left}</td>
+                            <td className="border border-zinc-400 px-2 py-1">{pair.right}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                  {q.subQuestions && q.subQuestions.length > 0 && (
+                    <ol className="ml-5 mt-2 space-y-1.5 text-sm">
+                      {q.subQuestions.map((sq, sqi) => (
+                        <li key={sqi}>
+                          <span className="font-medium">{sq.number} </span>
+                          {sq.question}
+                          {sq.marks ? (
+                            <span className="ml-1 font-semibold text-zinc-600">[{sq.marks}]</span>
+                          ) : null}
+                          {sq.options && sq.options.length > 0 && (
+                            <div className="ml-4 mt-1 grid grid-cols-1 gap-0.5 sm:grid-cols-2">
+                              {sq.options.map((opt, oi) => (
+                                <span key={oi}>
+                                  ({String.fromCharCode(97 + oi)}) {opt}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ol>
                   )}
                 </li>
               ))}
