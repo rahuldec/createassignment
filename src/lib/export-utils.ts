@@ -225,6 +225,9 @@ export async function exportPdf(
         y += lineHeight;
       });
       y += 2;
+      if (q.passage) {
+        writeText(q.passage, { size: 9.5, indent: 16, gap: 3 });
+      }
       if (q.options?.length) {
         q.options.forEach((opt, i) =>
           writeText(`(${String.fromCharCode(97 + i)}) ${opt}`, {
@@ -233,6 +236,27 @@ export async function exportPdf(
             gap: 1,
           }),
         );
+      }
+      if (q.matchPairs?.length) {
+        writeText("Column A — Column B", { size: 9.5, bold: true, indent: 16, gap: 1 });
+        q.matchPairs.forEach((pair) =>
+          writeText(`${pair.left}   —   ${pair.right}`, { size: 10, indent: 18, gap: 1 }),
+        );
+      }
+      if (q.subQuestions?.length) {
+        q.subQuestions.forEach((sq) => {
+          const sm = sq.marks ? `  [${sq.marks}]` : "";
+          writeText(`${sq.number} ${sq.question}${sm}`, { size: 10, indent: 18, gap: 1 });
+          if (sq.options?.length) {
+            sq.options.forEach((opt, i) =>
+              writeText(`(${String.fromCharCode(97 + i)}) ${opt}`, {
+                size: 9.5,
+                indent: 30,
+                gap: 1,
+              }),
+            );
+          }
+        });
       }
       y += 4;
     });
