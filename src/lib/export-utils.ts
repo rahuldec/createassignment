@@ -260,7 +260,7 @@ export async function exportDocx(
   assignment: GeneratedAssignment,
   includeAnswerKey: boolean,
 ) {
-  const children: Paragraph[] = [];
+  const children: (Paragraph | Table)[] = [];
 
   if (header.schoolLogo) {
     try {
