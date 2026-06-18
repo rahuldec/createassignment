@@ -84,7 +84,7 @@ function Index() {
       const prompt = buildPrompt({
         className: header.className,
         subject: header.subject,
-        topic: header.subject && gen.curriculum === "delf" ? header.topic : header.topic,
+        topic: header.topic,
         difficulty: gen.difficulty,
         curriculum: gen.curriculum,
         delfLevel: gen.delfLevel,
