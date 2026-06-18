@@ -4,6 +4,7 @@ import { Upload, X, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -17,12 +18,16 @@ import {
   SUBJECTS,
   QUESTION_TYPES,
   DIFFICULTY_LEVELS,
+  DELF_LEVELS,
   type AssignmentHeader,
+  type Curriculum,
   type QuestionType,
 } from "@/lib/assignment-types";
 
 interface GenState {
   difficulty: string;
+  curriculum: Curriculum;
+  delfLevel: string;
   config: Record<string, { count: number; marks: number }>;
 }
 
