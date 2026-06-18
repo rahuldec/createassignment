@@ -380,6 +380,16 @@ export async function exportDocx(
           ],
         }),
       );
+      if (q.passage) {
+        children.push(
+          new Paragraph({
+            indent: { left: 360 },
+            spacing: { before: 40, after: 60 },
+            border: { left: { style: BorderStyle.SINGLE, size: 12, color: "AAAAAA", space: 8 } },
+            children: [new TextRun({ text: q.passage, italics: true, size: 21 })],
+          }),
+        );
+      }
       if (q.options?.length) {
         q.options.forEach((opt, i) =>
           children.push(
@@ -392,6 +402,76 @@ export async function exportDocx(
             }),
           ),
         );
+      }
+      if (q.matchPairs?.length) {
+        children.push(
+          new Table({
+            width: { size: 8280, type: WidthType.DXA },
+            columnWidths: [4140, 4140],
+            rows: [
+              new TableRow({
+                tableHeader: true,
+                children: ["Column A", "Column B"].map(
+                  (h) =>
+                    new TableCell({
+                      width: { size: 4140, type: WidthType.DXA },
+                      verticalAlign: VerticalAlign.CENTER,
+                      shading: { fill: "D5E8F0", type: ShadingType.CLEAR },
+                      margins: { top: 60, bottom: 60, left: 120, right: 120 },
+                      children: [
+                        new Paragraph({ children: [new TextRun({ text: h, bold: true, size: 21 })] }),
+                      ],
+                    }),
+                ),
+              }),
+              ...q.matchPairs.map(
+                (pair) =>
+                  new TableRow({
+                    children: [pair.left, pair.right].map(
+                      (cell) =>
+                        new TableCell({
+                          width: { size: 4140, type: WidthType.DXA },
+                          margins: { top: 60, bottom: 60, left: 120, right: 120 },
+                          children: [
+                            new Paragraph({ children: [new TextRun({ text: cell, size: 21 })] }),
+                          ],
+                        }),
+                    ),
+                  }),
+              ),
+            ],
+          }),
+        );
+      }
+      if (q.subQuestions?.length) {
+        q.subQuestions.forEach((sq) => {
+          children.push(
+            new Paragraph({
+              indent: { left: 480 },
+              spacing: { before: 30, after: 10 },
+              children: [
+                new TextRun({ text: `${sq.number} `, bold: true, size: 21 }),
+                new TextRun({ text: sq.question, size: 21 }),
+                ...(sq.marks
+                  ? [new TextRun({ text: `   [${sq.marks}]`, size: 19, bold: true })]
+                  : []),
+              ],
+            }),
+          );
+          if (sq.options?.length) {
+            sq.options.forEach((opt, i) =>
+              children.push(
+                new Paragraph({
+                  indent: { left: 840 },
+                  spacing: { after: 8 },
+                  children: [
+                    new TextRun({ text: `${String.fromCharCode(97 + i)}) ${opt}`, size: 21 }),
+                  ],
+                }),
+              ),
+            );
+          }
+        });
       }
     });
   });
