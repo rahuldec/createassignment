@@ -94,14 +94,35 @@ export const generateAssignment = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("AI is not configured. Missing API key.");
 
-    const systemPrompt =
-      "You are an expert CBSE school examiner who writes clear, accurate, " +
-      "age-appropriate question papers strictly based on official NCERT/CBSE textbooks. " +
-      "Always return valid structured JSON only. " +
-      "Generate all questions and content directly from the CBSE curriculum and prescribed NCERT books for the given class, subject and chapter. " +
-      "Group questions into sections (Section A, Section B, ...) by question type. " +
+    const formatNote =
+      " For Case Study and Source-Based questions, include a passage and a subQuestions array. " +
+      "For Match the Following questions, include a matchPairs array of {left,right} and the correct pairing in answer. " +
       "For MCQ provide exactly 4 options as plain strings WITHOUT a), b) prefixes. " +
       "Assign reasonable marks to each question. Provide a concise correct answer for every question.";
+
+    let systemPrompt: string;
+    if (data.curriculum === "delf") {
+      systemPrompt =
+        "You are an expert French DELF/DALF examiner who writes clear, accurate question papers " +
+        "following the official DELF/DALF exam format and competencies. " +
+        "Write questions in French. Always return valid structured JSON only. " +
+        "Group questions into sections (Section A, Section B, ...) by question type." +
+        formatNote;
+    } else if (data.curriculum === "general") {
+      systemPrompt =
+        "You are an expert school examiner who writes clear, accurate, age-appropriate question papers. " +
+        "Always return valid structured JSON only. " +
+        "Group questions into sections (Section A, Section B, ...) by question type." +
+        formatNote;
+    } else {
+      systemPrompt =
+        "You are an expert CBSE school examiner who writes clear, accurate, " +
+        "age-appropriate question papers strictly based on official NCERT/CBSE textbooks. " +
+        "Always return valid structured JSON only. " +
+        "Generate all questions and content directly from the CBSE curriculum and prescribed NCERT books for the given class, subject and chapter. " +
+        "Group questions into sections (Section A, Section B, ...) by question type." +
+        formatNote;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
