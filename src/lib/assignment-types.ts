@@ -68,6 +68,21 @@ export interface GenerationConfig {
   topic: string;
   groups: QuestionGroup[];
   difficulty: string;
+  curriculum: Curriculum;
+  delfLevel?: string;
+}
+
+export interface SubQuestion {
+  number: string; // e.g. "(i)"
+  question: string;
+  options?: string[];
+  marks?: number;
+  answer: string;
+}
+
+export interface MatchPair {
+  left: string;
+  right: string;
 }
 
 export interface GeneratedQuestion {
@@ -76,6 +91,9 @@ export interface GeneratedQuestion {
   options?: string[]; // for MCQ
   marks?: number;
   answer: string;
+  passage?: string; // for Case Study / Source-Based
+  subQuestions?: SubQuestion[];
+  matchPairs?: MatchPair[];
 }
 
 export interface GeneratedSection {
