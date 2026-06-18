@@ -4,6 +4,7 @@ import { Upload, X, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -17,12 +18,16 @@ import {
   SUBJECTS,
   QUESTION_TYPES,
   DIFFICULTY_LEVELS,
+  DELF_LEVELS,
   type AssignmentHeader,
+  type Curriculum,
   type QuestionType,
 } from "@/lib/assignment-types";
 
 interface GenState {
   difficulty: string;
+  curriculum: Curriculum;
+  delfLevel: string;
   config: Record<string, { count: number; marks: number }>;
 }
 
@@ -84,6 +89,18 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
     });
   };
 
+  const setCurriculum = (next: Curriculum) => {
+    if (next === "delf") {
+      setGen({ ...gen, curriculum: "delf" });
+      setHeader({ ...header, subject: "French" });
+    } else {
+      setGen({ ...gen, curriculum: next });
+    }
+  };
+
+  const delfActive = gen.curriculum === "delf";
+  const cbseActive = gen.curriculum === "cbse";
+
   const totalQuestions = Object.values(gen.config).reduce((a, v) => a + (v.count || 0), 0);
   const totalMarks = Object.values(gen.config).reduce(
     (a, v) => a + (v.count || 0) * (v.marks || 0),
@@ -93,7 +110,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
   return (
     <div className="space-y-5">
       <SectionCard title="Assignment Header" step={1}>
-        <Field label="School Name">
+        <Field label="School Name (optional)">
           <Input
             placeholder="e.g. Springfield Public School"
             value={header.schoolName}
@@ -101,7 +118,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           />
         </Field>
 
-        <Field label="School Logo">
+        <Field label="School Logo (optional)">
           {header.schoolLogo ? (
             <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-2.5">
               <img
@@ -164,6 +181,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           </Field>
           <Field label="Subject">
             <Select
+              disabled={delfActive}
               value={(SUBJECTS as readonly string[]).includes(header.subject) ? header.subject : "Other"}
               onValueChange={(v) =>
                 setHeader({ ...header, subject: v === "Other" ? "" : v })
@@ -275,6 +293,49 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
             </span>
           </p>
         </div>
+
+        <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">CBSE / NCERT</p>
+              <p className="text-xs text-muted-foreground">Questions from CBSE curriculum</p>
+            </div>
+            <Switch
+              checked={cbseActive}
+              onCheckedChange={(v) => setCurriculum(v ? "cbse" : "general")}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">French DELF / DALF</p>
+              <p className="text-xs text-muted-foreground">Subject locks to French</p>
+            </div>
+            <Switch
+              checked={delfActive}
+              onCheckedChange={(v) => setCurriculum(v ? "delf" : "cbse")}
+            />
+          </div>
+          {delfActive && (
+            <Field label="DELF / DALF Level">
+              <Select
+                value={gen.delfLevel}
+                onValueChange={(v) => setGen({ ...gen, delfLevel: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DELF_LEVELS.map((l) => (
+                    <SelectItem key={l} value={l}>
+                      {l}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        </div>
+
 
         <Field label="Difficulty Level">
           <Select value={gen.difficulty} onValueChange={(v) => setGen({ ...gen, difficulty: v })}>

@@ -7,6 +7,12 @@ import {
   HeadingLevel,
   ImageRun,
   BorderStyle,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  ShadingType,
+  VerticalAlign,
 } from "docx";
 import jsPDF from "jspdf";
 
@@ -219,6 +225,9 @@ export async function exportPdf(
         y += lineHeight;
       });
       y += 2;
+      if (q.passage) {
+        writeText(q.passage, { size: 9.5, indent: 16, gap: 3 });
+      }
       if (q.options?.length) {
         q.options.forEach((opt, i) =>
           writeText(`(${String.fromCharCode(97 + i)}) ${opt}`, {
@@ -227,6 +236,27 @@ export async function exportPdf(
             gap: 1,
           }),
         );
+      }
+      if (q.matchPairs?.length) {
+        writeText("Column A — Column B", { size: 9.5, bold: true, indent: 16, gap: 1 });
+        q.matchPairs.forEach((pair) =>
+          writeText(`${pair.left}   —   ${pair.right}`, { size: 10, indent: 18, gap: 1 }),
+        );
+      }
+      if (q.subQuestions?.length) {
+        q.subQuestions.forEach((sq) => {
+          const sm = sq.marks ? `  [${sq.marks}]` : "";
+          writeText(`${sq.number} ${sq.question}${sm}`, { size: 10, indent: 18, gap: 1 });
+          if (sq.options?.length) {
+            sq.options.forEach((opt, i) =>
+              writeText(`(${String.fromCharCode(97 + i)}) ${opt}`, {
+                size: 9.5,
+                indent: 30,
+                gap: 1,
+              }),
+            );
+          }
+        });
       }
       y += 4;
     });
@@ -239,9 +269,19 @@ export async function exportPdf(
     writeText("ANSWER KEY", { size: 14, bold: true, align: "center", gap: 6 });
     assignment.sections.forEach((section) => {
       writeText(section.title, { size: 11, bold: true, gap: 2 });
-      section.questions.forEach((q) =>
-        writeText(`${q.number}. ${q.answer}`, { size: 10, indent: 10, gap: 2 }),
-      );
+      section.questions.forEach((q) => {
+        writeText(`${q.number}. ${q.answer}`, { size: 10, indent: 10, gap: 2 });
+        if (q.matchPairs?.length) {
+          q.matchPairs.forEach((pair) =>
+            writeText(`${pair.left} -> ${pair.right}`, { size: 9.5, indent: 20, gap: 1 }),
+          );
+        }
+        if (q.subQuestions?.length) {
+          q.subQuestions.forEach((sq) =>
+            writeText(`${sq.number} ${sq.answer}`, { size: 9.5, indent: 20, gap: 1 }),
+          );
+        }
+      });
       y += 4;
     });
   }
@@ -254,7 +294,7 @@ export async function exportDocx(
   assignment: GeneratedAssignment,
   includeAnswerKey: boolean,
 ) {
-  const children: Paragraph[] = [];
+  const children: (Paragraph | Table)[] = [];
 
   if (header.schoolLogo) {
     try {
@@ -374,6 +414,16 @@ export async function exportDocx(
           ],
         }),
       );
+      if (q.passage) {
+        children.push(
+          new Paragraph({
+            indent: { left: 360 },
+            spacing: { before: 40, after: 60 },
+            border: { left: { style: BorderStyle.SINGLE, size: 12, color: "AAAAAA", space: 8 } },
+            children: [new TextRun({ text: q.passage, italics: true, size: 21 })],
+          }),
+        );
+      }
       if (q.options?.length) {
         q.options.forEach((opt, i) =>
           children.push(
@@ -386,6 +436,76 @@ export async function exportDocx(
             }),
           ),
         );
+      }
+      if (q.matchPairs?.length) {
+        children.push(
+          new Table({
+            width: { size: 8280, type: WidthType.DXA },
+            columnWidths: [4140, 4140],
+            rows: [
+              new TableRow({
+                tableHeader: true,
+                children: ["Column A", "Column B"].map(
+                  (h) =>
+                    new TableCell({
+                      width: { size: 4140, type: WidthType.DXA },
+                      verticalAlign: VerticalAlign.CENTER,
+                      shading: { fill: "D5E8F0", type: ShadingType.CLEAR },
+                      margins: { top: 60, bottom: 60, left: 120, right: 120 },
+                      children: [
+                        new Paragraph({ children: [new TextRun({ text: h, bold: true, size: 21 })] }),
+                      ],
+                    }),
+                ),
+              }),
+              ...q.matchPairs.map(
+                (pair) =>
+                  new TableRow({
+                    children: [pair.left, pair.right].map(
+                      (cell) =>
+                        new TableCell({
+                          width: { size: 4140, type: WidthType.DXA },
+                          margins: { top: 60, bottom: 60, left: 120, right: 120 },
+                          children: [
+                            new Paragraph({ children: [new TextRun({ text: cell, size: 21 })] }),
+                          ],
+                        }),
+                    ),
+                  }),
+              ),
+            ],
+          }),
+        );
+      }
+      if (q.subQuestions?.length) {
+        q.subQuestions.forEach((sq) => {
+          children.push(
+            new Paragraph({
+              indent: { left: 480 },
+              spacing: { before: 30, after: 10 },
+              children: [
+                new TextRun({ text: `${sq.number} `, bold: true, size: 21 }),
+                new TextRun({ text: sq.question, size: 21 }),
+                ...(sq.marks
+                  ? [new TextRun({ text: `   [${sq.marks}]`, size: 19, bold: true })]
+                  : []),
+              ],
+            }),
+          );
+          if (sq.options?.length) {
+            sq.options.forEach((opt, i) =>
+              children.push(
+                new Paragraph({
+                  indent: { left: 840 },
+                  spacing: { after: 8 },
+                  children: [
+                    new TextRun({ text: `${String.fromCharCode(97 + i)}) ${opt}`, size: 21 }),
+                  ],
+                }),
+              ),
+            );
+          }
+        });
       }
     });
   });
@@ -406,17 +526,44 @@ export async function exportDocx(
           children: [new TextRun({ text: section.title, bold: true, size: 22 })],
         }),
       );
-      section.questions.forEach((q) =>
+      section.questions.forEach((q) => {
         children.push(
           new Paragraph({
-            spacing: { after: 20 },
+            spacing: { after: q.subQuestions?.length || q.matchPairs?.length ? 8 : 20 },
             children: [
               new TextRun({ text: `${q.number}. `, bold: true, size: 22 }),
               new TextRun({ text: q.answer, size: 22 }),
             ],
           }),
-        ),
-      );
+        );
+        if (q.matchPairs?.length) {
+          q.matchPairs.forEach((pair) =>
+            children.push(
+              new Paragraph({
+                indent: { left: 480 },
+                spacing: { after: 8 },
+                children: [
+                  new TextRun({ text: `${pair.left} → ${pair.right}`, size: 21 }),
+                ],
+              }),
+            ),
+          );
+        }
+        if (q.subQuestions?.length) {
+          q.subQuestions.forEach((sq) =>
+            children.push(
+              new Paragraph({
+                indent: { left: 480 },
+                spacing: { after: 8 },
+                children: [
+                  new TextRun({ text: `${sq.number} `, bold: true, size: 21 }),
+                  new TextRun({ text: sq.answer, size: 21 }),
+                ],
+              }),
+            ),
+          );
+        }
+      });
     });
   }
 

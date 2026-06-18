@@ -43,6 +43,8 @@ const initialHeader: AssignmentHeader = {
 
 const initialGen = {
   difficulty: "Medium",
+  curriculum: "cbse" as "cbse" | "delf" | "general",
+  delfLevel: "B1",
   config: {
     MCQ: { count: 5, marks: 1 },
     "Short Answer": { count: 3, marks: 2 },
@@ -84,6 +86,8 @@ function Index() {
         subject: header.subject,
         topic: header.topic,
         difficulty: gen.difficulty,
+        curriculum: gen.curriculum,
+        delfLevel: gen.delfLevel,
         groups,
       });
       const result = await generateAssignment({
@@ -92,6 +96,8 @@ function Index() {
           subject: header.subject,
           topic: header.topic,
           difficulty: gen.difficulty,
+          curriculum: gen.curriculum,
+          delfLevel: gen.delfLevel,
           groups: groups.map((g) => ({ type: g.type, count: g.count })),
           prompt,
         },

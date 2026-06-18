@@ -19,9 +19,16 @@ export const QUESTION_TYPES = [
   "Assertion & Reason",
   "True / False",
   "Fill in the Blanks",
+  "Case Study",
+  "Source-Based",
+  "Match the Following",
 ] as const;
 
 export const DIFFICULTY_LEVELS = ["Easy", "Medium", "Hard"] as const;
+
+export const DELF_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
+
+export type Curriculum = "cbse" | "delf" | "general";
 
 export const BLOOMS_LEVELS = [
   "Remember",
@@ -61,6 +68,21 @@ export interface GenerationConfig {
   topic: string;
   groups: QuestionGroup[];
   difficulty: string;
+  curriculum: Curriculum;
+  delfLevel?: string;
+}
+
+export interface SubQuestion {
+  number: string; // e.g. "(i)"
+  question: string;
+  options?: string[];
+  marks?: number;
+  answer: string;
+}
+
+export interface MatchPair {
+  left: string;
+  right: string;
 }
 
 export interface GeneratedQuestion {
@@ -69,6 +91,9 @@ export interface GeneratedQuestion {
   options?: string[]; // for MCQ
   marks?: number;
   answer: string;
+  passage?: string; // for Case Study / Source-Based
+  subQuestions?: SubQuestion[];
+  matchPairs?: MatchPair[];
 }
 
 export interface GeneratedSection {
