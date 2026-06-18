@@ -110,7 +110,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
   return (
     <div className="space-y-5">
       <SectionCard title="Assignment Header" step={1}>
-        <Field label="School Name">
+        <Field label="School Name (optional)">
           <Input
             placeholder="e.g. Springfield Public School"
             value={header.schoolName}
