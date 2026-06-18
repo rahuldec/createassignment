@@ -269,9 +269,19 @@ export async function exportPdf(
     writeText("ANSWER KEY", { size: 14, bold: true, align: "center", gap: 6 });
     assignment.sections.forEach((section) => {
       writeText(section.title, { size: 11, bold: true, gap: 2 });
-      section.questions.forEach((q) =>
-        writeText(`${q.number}. ${q.answer}`, { size: 10, indent: 10, gap: 2 }),
-      );
+      section.questions.forEach((q) => {
+        writeText(`${q.number}. ${q.answer}`, { size: 10, indent: 10, gap: 2 });
+        if (q.matchPairs?.length) {
+          q.matchPairs.forEach((pair) =>
+            writeText(`${pair.left} -> ${pair.right}`, { size: 9.5, indent: 20, gap: 1 }),
+          );
+        }
+        if (q.subQuestions?.length) {
+          q.subQuestions.forEach((sq) =>
+            writeText(`${sq.number} ${sq.answer}`, { size: 9.5, indent: 20, gap: 1 }),
+          );
+        }
+      });
       y += 4;
     });
   }
