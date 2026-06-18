@@ -118,7 +118,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           />
         </Field>
 
-        <Field label="School Logo">
+        <Field label="School Logo (optional)">
           {header.schoolLogo ? (
             <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-2.5">
               <img
