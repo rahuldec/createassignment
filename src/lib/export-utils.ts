@@ -7,6 +7,12 @@ import {
   HeadingLevel,
   ImageRun,
   BorderStyle,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  ShadingType,
+  VerticalAlign,
 } from "docx";
 import jsPDF from "jspdf";
 
