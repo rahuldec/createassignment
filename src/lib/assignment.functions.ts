@@ -13,6 +13,8 @@ const inputSchema = z.object({
   subject: z.string().min(1),
   topic: z.string().min(1),
   difficulty: z.string().min(1),
+  curriculum: z.enum(["cbse", "delf", "general"]),
+  delfLevel: z.string().optional(),
 
   groups: z.array(questionGroupSchema).min(1),
   prompt: z.string().min(1),
