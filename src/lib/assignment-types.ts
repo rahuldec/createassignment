@@ -19,9 +19,16 @@ export const QUESTION_TYPES = [
   "Assertion & Reason",
   "True / False",
   "Fill in the Blanks",
+  "Case Study",
+  "Source-Based",
+  "Match the Following",
 ] as const;
 
 export const DIFFICULTY_LEVELS = ["Easy", "Medium", "Hard"] as const;
+
+export const DELF_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
+
+export type Curriculum = "cbse" | "delf" | "general";
 
 export const BLOOMS_LEVELS = [
   "Remember",
