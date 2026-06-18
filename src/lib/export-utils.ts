@@ -492,17 +492,44 @@ export async function exportDocx(
           children: [new TextRun({ text: section.title, bold: true, size: 22 })],
         }),
       );
-      section.questions.forEach((q) =>
+      section.questions.forEach((q) => {
         children.push(
           new Paragraph({
-            spacing: { after: 20 },
+            spacing: { after: q.subQuestions?.length || q.matchPairs?.length ? 8 : 20 },
             children: [
               new TextRun({ text: `${q.number}. `, bold: true, size: 22 }),
               new TextRun({ text: q.answer, size: 22 }),
             ],
           }),
-        ),
-      );
+        );
+        if (q.matchPairs?.length) {
+          q.matchPairs.forEach((pair) =>
+            children.push(
+              new Paragraph({
+                indent: { left: 480 },
+                spacing: { after: 8 },
+                children: [
+                  new TextRun({ text: `${pair.left} → ${pair.right}`, size: 21 }),
+                ],
+              }),
+            ),
+          );
+        }
+        if (q.subQuestions?.length) {
+          q.subQuestions.forEach((sq) =>
+            children.push(
+              new Paragraph({
+                indent: { left: 480 },
+                spacing: { after: 8 },
+                children: [
+                  new TextRun({ text: `${sq.number} `, bold: true, size: 21 }),
+                  new TextRun({ text: sq.answer, size: 21 }),
+                ],
+              }),
+            ),
+          );
+        }
+      });
     });
   }
 
