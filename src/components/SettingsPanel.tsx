@@ -89,6 +89,18 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
     });
   };
 
+  const setCurriculum = (next: Curriculum) => {
+    if (next === "delf") {
+      setGen({ ...gen, curriculum: "delf" });
+      setHeader({ ...header, subject: "French" });
+    } else {
+      setGen({ ...gen, curriculum: next });
+    }
+  };
+
+  const delfActive = gen.curriculum === "delf";
+  const cbseActive = gen.curriculum === "cbse";
+
   const totalQuestions = Object.values(gen.config).reduce((a, v) => a + (v.count || 0), 0);
   const totalMarks = Object.values(gen.config).reduce(
     (a, v) => a + (v.count || 0) * (v.marks || 0),
