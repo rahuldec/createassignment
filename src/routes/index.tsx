@@ -84,8 +84,10 @@ function Index() {
       const prompt = buildPrompt({
         className: header.className,
         subject: header.subject,
-        topic: header.topic,
+        topic: header.subject && gen.curriculum === "delf" ? header.topic : header.topic,
         difficulty: gen.difficulty,
+        curriculum: gen.curriculum,
+        delfLevel: gen.delfLevel,
         groups,
       });
       const result = await generateAssignment({
@@ -94,6 +96,8 @@ function Index() {
           subject: header.subject,
           topic: header.topic,
           difficulty: gen.difficulty,
+          curriculum: gen.curriculum,
+          delfLevel: gen.delfLevel,
           groups: groups.map((g) => ({ type: g.type, count: g.count })),
           prompt,
         },
