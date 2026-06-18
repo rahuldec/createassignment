@@ -181,6 +181,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           </Field>
           <Field label="Subject">
             <Select
+              disabled={delfActive}
               value={(SUBJECTS as readonly string[]).includes(header.subject) ? header.subject : "Other"}
               onValueChange={(v) =>
                 setHeader({ ...header, subject: v === "Other" ? "" : v })
