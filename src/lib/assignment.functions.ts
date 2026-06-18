@@ -48,6 +48,34 @@ const RESPONSE_SCHEMA = {
                 options: { type: "array", items: { type: "string" } },
                 marks: { type: "number" },
                 answer: { type: "string" },
+                passage: { type: "string" },
+                subQuestions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    properties: {
+                      number: { type: "string" },
+                      question: { type: "string" },
+                      options: { type: "array", items: { type: "string" } },
+                      marks: { type: "number" },
+                      answer: { type: "string" },
+                    },
+                    required: ["number", "question", "answer"],
+                  },
+                },
+                matchPairs: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    properties: {
+                      left: { type: "string" },
+                      right: { type: "string" },
+                    },
+                    required: ["left", "right"],
+                  },
+                },
               },
               required: ["number", "question", "answer"],
             },
