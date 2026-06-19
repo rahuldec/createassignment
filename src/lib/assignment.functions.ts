@@ -91,7 +91,7 @@ const RESPONSE_SCHEMA = {
 export const generateAssignment = createServerFn({ method: "POST" })
   .inputValidator(inputSchema)
   .handler(async ({ data }): Promise<GeneratedAssignment> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("AI is not configured. Missing API key.");
 
     const formatNote =
@@ -124,14 +124,14 @@ export const generateAssignment = createServerFn({ method: "POST" })
         formatNote;
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Lovable-API-Key": apiKey,
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: data.prompt },
