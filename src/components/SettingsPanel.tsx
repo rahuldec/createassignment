@@ -109,7 +109,51 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
 
   return (
     <div className="space-y-5">
-      <SectionCard title="Assignment Header" step={1}>
+      <SectionCard title="Curriculum" step={1}>
+        <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">CBSE / NCERT</p>
+              <p className="text-xs text-muted-foreground">Questions from CBSE curriculum</p>
+            </div>
+            <Switch
+              checked={cbseActive}
+              onCheckedChange={(v) => setCurriculum(v ? "cbse" : "general")}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">French DELF / DALF</p>
+              <p className="text-xs text-muted-foreground">Subject locks to French</p>
+            </div>
+            <Switch
+              checked={delfActive}
+              onCheckedChange={(v) => setCurriculum(v ? "delf" : "cbse")}
+            />
+          </div>
+          {delfActive && (
+            <Field label="DELF / DALF Level">
+              <Select
+                value={gen.delfLevel}
+                onValueChange={(v) => setGen({ ...gen, delfLevel: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DELF_LEVELS.map((l) => (
+                    <SelectItem key={l} value={l}>
+                      {l}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Assignment Header" step={2}>
         <Field label="School Name (optional)">
           <Input
             placeholder="e.g. Springfield Public School"
@@ -161,47 +205,54 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Class">
-            <Select
-              value={header.className}
-              onValueChange={(v) => setHeader({ ...header, className: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                {CLASSES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Subject">
-            <Select
-              disabled={delfActive}
-              value={(SUBJECTS as readonly string[]).includes(header.subject) ? header.subject : "Other"}
-              onValueChange={(v) =>
-                setHeader({ ...header, subject: v === "Other" ? "" : v })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                {SUBJECTS.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
+        {!delfActive && (
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Class">
+              <Select
+                value={header.className}
+                onValueChange={(v) => setHeader({ ...header, className: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CLASSES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Subject">
+              <Select
+                value={(SUBJECTS as readonly string[]).includes(header.subject) ? header.subject : "Other"}
+                onValueChange={(v) =>
+                  setHeader({ ...header, subject: v === "Other" ? "" : v })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUBJECTS.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+        )}
 
-        {!(SUBJECTS as readonly string[]).includes(header.subject) && (
+        {delfActive && (
+          <Field label="Subject">
+            <Input value="French" disabled />
+          </Field>
+        )}
+
+        {!delfActive && !(SUBJECTS as readonly string[]).includes(header.subject) && (
           <Field label="Custom Subject Name">
             <Input
               placeholder="e.g. Environmental Studies"
@@ -213,7 +264,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
 
         <Field label="Topic / Chapter Name">
           <Input
-            placeholder="e.g. Force and Pressure"
+            placeholder={delfActive ? "e.g. La famille, Les vacances" : "e.g. Force and Pressure"}
             value={header.topic}
             onChange={(e) => setHeader({ ...header, topic: e.target.value })}
           />
@@ -247,7 +298,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
         </Field>
       </SectionCard>
 
-      <SectionCard title="Question Configuration" step={2}>
+      <SectionCard title="Question Configuration" step={3}>
         <div>
           <div className="mb-2 grid grid-cols-[1fr_auto_auto] items-center gap-2">
             <Label className="text-xs font-medium text-muted-foreground">Question Type</Label>
@@ -293,49 +344,6 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
             </span>
           </p>
         </div>
-
-        <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">CBSE / NCERT</p>
-              <p className="text-xs text-muted-foreground">Questions from CBSE curriculum</p>
-            </div>
-            <Switch
-              checked={cbseActive}
-              onCheckedChange={(v) => setCurriculum(v ? "cbse" : "general")}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">French DELF / DALF</p>
-              <p className="text-xs text-muted-foreground">Subject locks to French</p>
-            </div>
-            <Switch
-              checked={delfActive}
-              onCheckedChange={(v) => setCurriculum(v ? "delf" : "cbse")}
-            />
-          </div>
-          {delfActive && (
-            <Field label="DELF / DALF Level">
-              <Select
-                value={gen.delfLevel}
-                onValueChange={(v) => setGen({ ...gen, delfLevel: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DELF_LEVELS.map((l) => (
-                    <SelectItem key={l} value={l}>
-                      {l}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          )}
-        </div>
-
 
         <Field label="Difficulty Level">
           <Select value={gen.difficulty} onValueChange={(v) => setGen({ ...gen, difficulty: v })}>
