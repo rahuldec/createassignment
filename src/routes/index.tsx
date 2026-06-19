@@ -1,74 +1,160 @@
-from zipfile import ZipFile
-import re
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { GraduationCap } from "lucide-react";
+import { Toaster, toast } from "sonner";
 
-zip_path='/mnt/data/createassignment-main (1).zip'
-with ZipFile(zip_path) as z:
-    path='createassignment-main/src/routes/index.tsx'
-    txt=z.read(path).decode('utf-8')
+import { SettingsPanel } from "@/components/SettingsPanel";
+import { AssignmentPreview } from "@/components/AssignmentPreview";
+import { generateAssignment } from "@/lib/assignment.functions";
+import { buildPrompt } from "@/lib/prompt-builder";
+import type { AssignmentHeader, GeneratedAssignment, QuestionGroup } from "@/lib/assignment-types";
 
-txt=txt.replace(
-    'import { GraduationCap } from "lucide-react";',
-    'import { GraduationCap, Sparkles, FileText, Download } from "lucide-react";'
-)
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Assignment Generator for Teachers — AI Question Papers" },
+      {
+        name: "description",
+        content:
+          "Create professional school assignments and question papers (Class 1–12) in seconds with AI. Export to PDF and DOCX. No sign-up required.",
+      },
+      { property: "og:title", content: "Assignment Generator for Teachers" },
+      {
+        property: "og:description",
+        content:
+          "Generate CBSE-style question papers with AI and download print-ready PDF or DOCX files.",
+      },
+    ],
+  }),
+  component: Index,
+});
 
-txt=txt.replace(
-    '{ title: "Assignment Generator for Teachers — AI Question Papers" },',
-    '{ title: "Create School Assignments Online | CBSE & NCERT Assignment Generator" },'
-)
+const initialHeader: AssignmentHeader = {
+  schoolName: "",
+  schoolLogo: null,
+  examName: "",
+  className: "Class 8",
+  subject: "Science",
+  topic: "",
+  maxMarks: "",
+  duration: "",
+  instructions: "All questions are compulsory.\nWrite answers neatly.",
+};
 
-txt=txt.replace(
-    'Create professional school assignments and question papers (Class 1–12) in seconds with AI. Export to PDF and DOCX. No sign-up required.',
-    'Generate CBSE and NCERT assignments, worksheets, MCQs and question papers online for Classes 1–12. Free AI Assignment Generator for teachers.'
-)
+const initialGen = {
+  difficulty: "Medium",
+  curriculum: "cbse" as "cbse" | "delf" | "general",
+  delfLevel: "B1",
+  config: {
+    MCQ: { count: 5, marks: 1 },
+    "Short Answer": { count: 3, marks: 2 },
+  } as Record<string, { count: number; marks: number }>,
+};
 
-hero = '''
-      <section className="border-b bg-gradient-to-b from-blue-50 via-white to-white">
-        <div className="mx-auto max-w-6xl px-6 py-14 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-medium shadow-sm">
-            <Sparkles className="h-4 w-4" />
-            AI Powered Assignment Generator
+function Index() {
+  const [header, setHeader] = useState<AssignmentHeader>(initialHeader);
+  const [gen, setGen] = useState(initialGen);
+  const [assignment, setAssignment] = useState<GeneratedAssignment | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [showAnswerKey, setShowAnswerKey] = useState(false);
+
+  const runGeneration = async () => {
+    const groups: QuestionGroup[] = Object.entries(gen.config)
+      .filter(([, v]) => v.count > 0)
+      .map(([type, v], i) => ({
+        id: String(i),
+        type: type as QuestionGroup["type"],
+        count: v.count,
+        marks: v.marks,
+      }));
+
+    if (!header.topic.trim()) {
+      toast.error("Please enter a topic / chapter name.");
+      return;
+    }
+    if (groups.length === 0) {
+      toast.error("Add at least one question type with a count above 0.");
+      return;
+    }
+
+    setLoading(true);
+    setEditing(false);
+    try {
+      const prompt = buildPrompt({
+        className: header.className,
+        subject: header.subject,
+        topic: header.topic,
+        difficulty: gen.difficulty,
+        curriculum: gen.curriculum,
+        delfLevel: gen.delfLevel,
+        groups,
+      });
+      const result = await generateAssignment({
+        data: {
+          className: header.className,
+          subject: header.subject,
+          topic: header.topic,
+          difficulty: gen.difficulty,
+          curriculum: gen.curriculum,
+          delfLevel: gen.delfLevel,
+          groups: groups.map((g) => ({ type: g.type, count: g.count })),
+          prompt,
+        },
+      });
+      setAssignment(result);
+      toast.success("Assignment generated!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-soft">
+      <Toaster richColors position="top-center" />
+
+      <header className="no-print sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[1500px] items-center gap-3 px-4 py-3.5 sm:px-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-card">
+            <GraduationCap className="size-5 text-primary-foreground" />
           </div>
-
-          <h2 className="mx-auto max-w-4xl text-4xl font-extrabold tracking-tight text-slate-900 md:text-6xl">
-            Create School Assignments in Seconds
-          </h2>
-
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600">
-            Generate CBSE & NCERT aligned worksheets, MCQs, short-answer,
-            long-answer and exam-ready question papers for Classes 1–12.
-          </p>
-
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">✓ Classes 1–12</span>
-            <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-medium text-green-700">✓ Printable PDF</span>
-            <span className="rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-700">✓ No Sign-up Required</span>
-            <span className="rounded-full bg-orange-100 px-4 py-2 text-sm font-medium text-orange-700">✓ CBSE & NCERT</span>
+          <div>
+            <h1 className="text-lg font-bold leading-tight">Assignment Generator</h1>
+            <p className="text-xs text-muted-foreground">AI question papers for teachers</p>
           </div>
-
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border bg-white p-5 shadow-sm">
-              <FileText className="mx-auto mb-3 h-8 w-8 text-blue-600" />
-              <h3 className="font-semibold">Multiple Question Types</h3>
-              <p className="mt-2 text-sm text-slate-600">MCQ, True/False, Short Answer and Long Answer questions.</p>
-            </div>
-
-            <div className="rounded-2xl border bg-white p-5 shadow-sm">
-              <Sparkles className="mx-auto mb-3 h-8 w-8 text-blue-600" />
-              <h3 className="font-semibold">AI Generated</h3>
-              <p className="mt-2 text-sm text-slate-600">Unique assignments generated instantly from your topic.</p>
-            </div>
-
-            <div className="rounded-2xl border bg-white p-5 shadow-sm">
-              <Download className="mx-auto mb-3 h-8 w-8 text-blue-600" />
-              <h3 className="font-semibold">Export Ready</h3>
-              <p className="mt-2 text-sm text-slate-600">Download professional PDF and DOCX files for printing.</p>
-            </div>
-          </div>
+          <span className="ml-auto hidden rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground sm:inline">
+            Class 1 – 12 · No sign-up
+          </span>
         </div>
-      </section>
-'''
-txt=txt.replace('</header>\n\n      <main', '</header>\n'+hero+'\n      <main')
+      </header>
 
-out='/mnt/data/index.tsx'
-open(out,'w').write(txt)
-print(out)
+      <main className="mx-auto grid max-w-[1500px] grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[420px_1fr]">
+        <div className="no-print lg:sticky lg:top-[76px] lg:h-[calc(100vh-100px)] lg:overflow-y-auto lg:pr-1">
+          <SettingsPanel
+            header={header}
+            setHeader={setHeader}
+            gen={gen}
+            setGen={setGen}
+            onGenerate={runGeneration}
+            loading={loading}
+          />
+        </div>
+
+        <div>
+          <AssignmentPreview
+            header={header}
+            assignment={assignment}
+            loading={loading}
+            editing={editing}
+            setEditing={setEditing}
+            showAnswerKey={showAnswerKey}
+            setShowAnswerKey={setShowAnswerKey}
+            onRegenerate={runGeneration}
+          />
+        </div>
+      </main>
+    </div>
+  );
+}
