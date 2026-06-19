@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { GraduationCap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { GraduationCap, CheckCircle2 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 
 import { SettingsPanel } from "@/components/SettingsPanel";
@@ -51,6 +51,19 @@ const initialGen = {
   } as Record<string, { count: number; marks: number }>,
 };
 
+// Option B: rotating word shown in the compact sticky header, in place of
+// the static "Assignment Generator" title. Cycles every 2.2s.
+const HEADER_WORDS = ["Assignment", "Homework", "Class Test", "Worksheet"];
+
+function useRotatingWord(words: string[], intervalMs = 2200) {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIndex((i) => (i + 1) % words.length), intervalMs);
+    return () => clearInterval(id);
+  }, [words, intervalMs]);
+  return words[index];
+}
+
 function Index() {
   const [header, setHeader] = useState<AssignmentHeader>(initialHeader);
   const [gen, setGen] = useState(initialGen);
@@ -58,6 +71,7 @@ function Index() {
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [showAnswerKey, setShowAnswerKey] = useState(false);
+  const rotatingWord = useRotatingWord(HEADER_WORDS);
 
   const runGeneration = async () => {
     const groups: QuestionGroup[] = Object.entries(gen.config)
@@ -121,12 +135,23 @@ function Index() {
             <GraduationCap className="size-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-lg font-bold leading-tight">Assignment Generator</h1>
+            <h1 className="text-lg font-bold leading-tight">
+              Generate a perfect{" "}
+              <span key={rotatingWord} className="text-gradient header-word-fade">
+                {rotatingWord}
+              </span>
+            </h1>
             <p className="text-xs text-muted-foreground">AI question papers for teachers</p>
           </div>
-          <span className="ml-auto hidden rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground sm:inline">
-            Class 1 – 12 · No sign-up
-          </span>
+          <div className="ml-auto hidden items-center gap-2 sm:flex">
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
+              Class 1 – 12 · No sign-up
+            </span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+              <CheckCircle2 className="size-3.5" />
+              Free forever
+            </span>
+          </div>
         </div>
       </header>
 
@@ -155,6 +180,17 @@ function Index() {
           />
         </div>
       </main>
+
+      <style>{`
+        @keyframes headerWordFade {
+          from { opacity: 0; transform: translateY(3px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .header-word-fade { display: inline-block; animation: headerWordFade 0.35s ease; }
+        @media (prefers-reduced-motion: reduce) {
+          .header-word-fade { animation: none; }
+        }
+      `}</style>
     </div>
   );
 }
