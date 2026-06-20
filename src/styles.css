@@ -201,7 +201,16 @@
   font-family: "Times New Roman", Georgia, serif;
 }
 
-@keyframes pulseEdit {
+@keyframes stepFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.step-fade {
+  animation: stepFade 0.25s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-fade { animation: none; }
+}
   0%, 100% { box-shadow: 0 0 0 0 oklch(0.765 0.14 72.9 / 0.35); }
   50% { box-shadow: 0 0 0 6px oklch(0.765 0.14 72.9 / 0.12); }
 }
