@@ -126,7 +126,7 @@ function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-soft">
+    <div className="min-h-screen bg-notebook">
       <Toaster richColors position="top-center" />
 
       <header className="no-print sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -143,6 +143,13 @@ function Index() {
             </h1>
             <p className="text-xs text-muted-foreground">AI question papers for teachers</p>
           </div>
+
+          <div className="mx-2 hidden flex-1 items-center justify-center gap-2 text-xs font-medium text-muted-foreground sm:flex">
+            <span>Assignment · Homework · Class Test · Worksheet</span>
+            <span className="text-border">|</span>
+            <span className="text-secondary-foreground">CBSE · IELTS · DELF/DALF</span>
+          </div>
+
           <div className="ml-auto hidden items-center gap-2 sm:flex">
             <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
               Class 1 – 12 · No sign-up
