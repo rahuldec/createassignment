@@ -211,6 +211,8 @@
 @media (prefers-reduced-motion: reduce) {
   .step-fade { animation: none; }
 }
+
+@keyframes pulseEdit {
   0%, 100% { box-shadow: 0 0 0 0 oklch(0.765 0.14 72.9 / 0.35); }
   50% { box-shadow: 0 0 0 6px oklch(0.765 0.14 72.9 / 0.12); }
 }
