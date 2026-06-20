@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { Upload, X, Sparkles, Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Upload, X, Sparkles, Loader2, ChevronLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,8 +71,57 @@ function SectionCard({
   );
 }
 
+const STEPS = [
+  { id: 1, label: "Curriculum" },
+  { id: 2, label: "Header" },
+  { id: 3, label: "Questions" },
+] as const;
+
+function Stepper({ step, setStep }: { step: number; setStep: (n: number) => void }) {
+  return (
+    <div className="flex items-center px-1 pb-1">
+      {STEPS.map((s, i) => (
+        <div key={s.id} className="flex flex-1 items-center last:flex-none">
+          <button
+            type="button"
+            onClick={() => setStep(s.id)}
+            className="flex flex-col items-center gap-1.5"
+          >
+            <span
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                step === s.id
+                  ? "bg-gradient-primary text-primary-foreground"
+                  : step > s.id
+                    ? "bg-primary/15 text-primary"
+                    : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {s.id}
+            </span>
+            <span
+              className={`text-[11px] font-medium ${
+                step === s.id ? "text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              {s.label}
+            </span>
+          </button>
+          {i < STEPS.length - 1 && (
+            <div
+              className={`mx-1.5 h-0.5 flex-1 rounded-full transition-colors ${
+                step > s.id ? "bg-primary/40" : "bg-border"
+              }`}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, loading }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [step, setStep] = useState(1);
 
   const handleLogo = (file?: File) => {
     if (!file) return;
@@ -109,6 +158,10 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
 
   return (
     <div className="space-y-5">
+      <Stepper step={step} setStep={setStep} />
+
+      <div key={step} className="step-fade">
+      {step === 1 && (
       <SectionCard title="Curriculum" step={1}>
         <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
           <div className="flex items-center justify-between">
@@ -152,7 +205,9 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           )}
         </div>
       </SectionCard>
+      )}
 
+      {step === 2 && (
       <SectionCard title="Assignment Header" step={2}>
         <Field label="School Name (optional)">
           <Input
@@ -297,7 +352,9 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           />
         </Field>
       </SectionCard>
+      )}
 
+      {step === 3 && (
       <SectionCard title="Question Configuration" step={3}>
         <div>
           <div className="mb-2 grid grid-cols-[1fr_auto_auto] items-center gap-2">
@@ -360,25 +417,44 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           </Select>
         </Field>
       </SectionCard>
+      )}
+      </div>
 
-      <Button
-        variant="hero"
-        size="lg"
-        className="w-full text-base"
-        onClick={onGenerate}
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <Loader2 className="animate-spin" /> Generating…
-          </>
-        ) : (
-          <>
-            <Sparkles /> Generate Assignment
-          </>
+      <div className="flex gap-2">
+        {step > 1 && (
+          <Button
+            variant="outline"
+            size="lg"
+            className="flex-none"
+            onClick={() => setStep(step - 1)}
+          >
+            <ChevronLeft /> Back
+          </Button>
         )}
-      </Button>
-
+        {step < 3 ? (
+          <Button size="lg" className="flex-1 text-base" onClick={() => setStep(step + 1)}>
+            Next
+          </Button>
+        ) : (
+          <Button
+            variant="hero"
+            size="lg"
+            className="flex-1 text-base"
+            onClick={onGenerate}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" /> Generating…
+              </>
+            ) : (
+              <>
+                <Sparkles /> Generate Assignment
+              </>
+            )}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
