@@ -201,6 +201,17 @@
   font-family: "Times New Roman", Georgia, serif;
 }
 
+@keyframes pulseEdit {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.765 0.14 72.9 / 0.35); }
+  50% { box-shadow: 0 0 0 6px oklch(0.765 0.14 72.9 / 0.12); }
+}
+.animate-pulse-edit {
+  animation: pulseEdit 2.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-edit { animation: none; }
+}
+
 @media print {
   body * {
     visibility: hidden;
