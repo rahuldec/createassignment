@@ -151,9 +151,6 @@ function Index() {
           </div>
 
           <div className="ml-auto hidden items-center gap-2 sm:flex">
-            <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
-              Class 1 – 12 · No sign-up
-            </span>
             <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
               <CheckCircle2 className="size-3.5" />
               Free forever
