@@ -209,9 +209,9 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
 
       {step === 2 && (
       <SectionCard title="Assignment Header" step={2}>
-        <Field label="School Name (optional)">
+        <Field label="School / Institute Name (optional)">
           <Input
-            placeholder="e.g. Springfield Public School"
+            placeholder="e.g. Springfield Public School / Institute"
             value={header.schoolName}
             onChange={(e) => setHeader({ ...header, schoolName: e.target.value })}
           />
@@ -252,7 +252,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           />
         </Field>
 
-        <Field label="Test / Exam Name">
+        <Field label="Test / Exam / Topic / Chapter Name">
           <Input
             placeholder="e.g. Unit Test 1"
             value={header.examName}
