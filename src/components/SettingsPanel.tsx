@@ -252,7 +252,7 @@ export function SettingsPanel({ header, setHeader, gen, setGen, onGenerate, load
           />
         </Field>
 
-        <Field label="Test / Exam / Topic / Chapter Name">
+        <Field label="Test Name">
           <Input
             placeholder="e.g. Unit Test 1"
             value={header.examName}
