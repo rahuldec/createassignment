@@ -122,7 +122,16 @@ export function AssignmentPreview({
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="no-print flex flex-wrap items-center gap-2">
-        <Button variant={editing ? "default" : "outline"} size="sm" onClick={() => setEditing(!editing)}>
+        <Button
+          variant={editing ? "default" : "outline"}
+          size="sm"
+          onClick={() => setEditing(!editing)}
+          className={
+            editing
+              ? ""
+              : "animate-pulse-edit border-accent bg-accent/10 text-accent-foreground hover:bg-accent/20"
+          }
+        >
           <Pencil /> {editing ? "Editing" : "Edit"}
         </Button>
         <Button variant="outline" size="sm" onClick={onRegenerate} disabled={loading}>
@@ -304,6 +313,16 @@ export function AssignmentPreview({
             ))}
           </div>
         )}
+      </div>
+
+      {/* Floating footer toolbar — quick export access while scrolling a long paper */}
+      <div className="no-print sticky bottom-4 z-10 mx-auto flex w-fit gap-2 rounded-full border border-border bg-card/95 p-2 shadow-elegant backdrop-blur-md">
+        <Button variant="secondary" size="sm" onClick={handlePdf}>
+          <FileDown /> PDF
+        </Button>
+        <Button size="sm" onClick={handleDocx}>
+          <FileText /> DOCX
+        </Button>
       </div>
     </div>
   );
