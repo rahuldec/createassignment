@@ -9,11 +9,18 @@ import {
   Eye,
   EyeOff,
   FileQuestion,
+  MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { exportPdf, exportDocx } from "@/lib/export-utils";
 import type { AssignmentHeader, GeneratedAssignment } from "@/lib/assignment-types";
 
@@ -121,38 +128,88 @@ export function AssignmentPreview({
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="no-print flex flex-wrap items-center gap-2">
-        <Button
-          variant={editing ? "default" : "outline"}
-          size="sm"
-          onClick={() => setEditing(!editing)}
-          className={
-            editing
-              ? ""
-              : "animate-pulse-edit border-accent bg-accent/10 text-accent-foreground hover:bg-accent/20"
-          }
-        >
-          <Pencil /> {editing ? "Editing" : "Edit"}
-        </Button>
-        <Button variant="outline" size="sm" onClick={onRegenerate} disabled={loading}>
-          <RefreshCw className={loading ? "animate-spin" : ""} /> Regenerate
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleCopy}>
-          <Copy /> Copy
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
-          <Printer /> Print
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => setShowAnswerKey(!showAnswerKey)}>
-          {showAnswerKey ? <EyeOff /> : <Eye />} Answer Key
-        </Button>
-        <div className="ml-auto flex gap-2">
-          <Button variant="secondary" size="sm" onClick={handlePdf}>
-            <FileDown /> PDF
+      <div className="no-print">
+        {/* Tablet / desktop: full row */}
+        <div className="hidden flex-wrap items-center gap-2 sm:flex">
+          <Button
+            variant={editing ? "default" : "outline"}
+            size="sm"
+            onClick={() => setEditing(!editing)}
+            className={
+              editing
+                ? ""
+                : "animate-pulse-edit border-accent bg-accent/10 text-accent-foreground hover:bg-accent/20"
+            }
+          >
+            <Pencil /> {editing ? "Editing" : "Edit"}
           </Button>
-          <Button size="sm" onClick={handleDocx}>
-            <FileText /> DOCX
+          <Button variant="outline" size="sm" onClick={onRegenerate} disabled={loading}>
+            <RefreshCw className={loading ? "animate-spin" : ""} /> Regenerate
           </Button>
+          <Button variant="outline" size="sm" onClick={handleCopy}>
+            <Copy /> Copy
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer /> Print
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowAnswerKey(!showAnswerKey)}>
+            {showAnswerKey ? <EyeOff /> : <Eye />} Answer Key
+          </Button>
+          <div className="ml-auto flex gap-2">
+            <Button variant="secondary" size="sm" onClick={handlePdf}>
+              <FileDown /> PDF
+            </Button>
+            <Button size="sm" onClick={handleDocx}>
+              <FileText /> DOCX
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile: compact row — Edit, More (overflow), PDF, DOCX */}
+        <div className="flex items-center gap-2 sm:hidden">
+          <Button
+            variant={editing ? "default" : "outline"}
+            size="sm"
+            onClick={() => setEditing(!editing)}
+            className={
+              editing
+                ? ""
+                : "animate-pulse-edit border-accent bg-accent/10 text-accent-foreground hover:bg-accent/20"
+            }
+          >
+            <Pencil /> {editing ? "Editing" : "Edit"}
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <MoreHorizontal /> More
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={onRegenerate} disabled={loading}>
+                <RefreshCw className={loading ? "animate-spin" : ""} /> Regenerate
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleCopy}>
+                <Copy /> Copy
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.print()}>
+                <Printer /> Print
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowAnswerKey(!showAnswerKey)}>
+                {showAnswerKey ? <EyeOff /> : <Eye />} Answer Key
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className="ml-auto flex gap-2">
+            <Button variant="secondary" size="sm" onClick={handlePdf}>
+              <FileDown /> PDF
+            </Button>
+            <Button size="sm" onClick={handleDocx}>
+              <FileText /> DOCX
+            </Button>
+          </div>
         </div>
       </div>
 
